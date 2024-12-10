@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BookAnalysisApp.Data;
 using BookAnalysisApp.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookAnalysisApp.Endpoint.Controllers
 {
@@ -43,6 +44,15 @@ namespace BookAnalysisApp.Endpoint.Controllers
             });
         }
 
+        [HttpGet("list")]
+        public async Task<IActionResult> GetBooks()
+        {
+            // Retrieve all books from the database
+            var books = await _context.Books.ToListAsync();
+
+            // Return the list of books
+            return Ok(books);
+        }
 
         [HttpGet("analyze")]
         public IActionResult AnalyzeBook()
