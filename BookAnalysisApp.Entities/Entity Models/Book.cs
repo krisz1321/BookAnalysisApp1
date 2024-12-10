@@ -1,24 +1,27 @@
-﻿using System;
-
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BookAnalysisApp.Entities
 {
     public class Book
     {
-        // Unique identifier for the book
         public Guid Id { get; set; }
 
-        // Title of the book
         public string Title { get; set; } = string.Empty;
 
-        // Full content of the book
         public string Content { get; set; } = string.Empty;
 
-        // Optional: Word frequency dictionary
+        // WordFrequency should not be part of the input model
+        [NotMapped] // This ensures it doesn't show up in Swagger or be part of the API input
         public Dictionary<string, int> WordFrequency { get; set; } = new();
 
-        // Date when the book was added
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Calculate word frequency from content
+        public void CalculateWordFrequency()
+        {
+            var words = Content.Split(new[] { ' ', '.', ',', '!', '?', ';', ':', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            WordFrequency = words.GroupBy(word => word.ToLower())
+                                 .ToDictionary(group => group.Key, group => group.Count());
+        }
     }
 }
-
