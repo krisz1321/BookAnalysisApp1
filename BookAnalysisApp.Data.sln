@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookAnalysisApp.Data", "Boo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookAnalysisApp.Endpoint", "BookAnalysisApp.Endpoint\BookAnalysisApp.Endpoint.csproj", "{F369FFDB-FAE7-4902-BB44-48564A99D529}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookAnalysisApp.Entities", "BookAnalysisApp.Entities\BookAnalysisApp.Entities.csproj", "{4E2DBA30-F1E8-4A3F-AC79-BD15D7C8BD1D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{F369FFDB-FAE7-4902-BB44-48564A99D529}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F369FFDB-FAE7-4902-BB44-48564A99D529}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F369FFDB-FAE7-4902-BB44-48564A99D529}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E2DBA30-F1E8-4A3F-AC79-BD15D7C8BD1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E2DBA30-F1E8-4A3F-AC79-BD15D7C8BD1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E2DBA30-F1E8-4A3F-AC79-BD15D7C8BD1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E2DBA30-F1E8-4A3F-AC79-BD15D7C8BD1D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
