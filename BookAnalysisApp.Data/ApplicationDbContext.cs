@@ -10,7 +10,9 @@ namespace BookAnalysisApp.Data
         {
         }
 
-        // DbSet for books
+  
         public DbSet<Book> Books { get; set; }
+
+        public DbSet<WordFrequency> WordFrequencies { get; set; }   
     }
 }

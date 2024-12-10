@@ -27,9 +27,6 @@ namespace BookAnalysisApp.Endpoint.Controllers
             book.Id = Guid.NewGuid();
             book.CreatedAt = DateTime.UtcNow;
 
-            // Automatically calculate the word frequency
-            book.CalculateWordFrequency();
-
             // Save the book to the database
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
@@ -54,11 +51,20 @@ namespace BookAnalysisApp.Endpoint.Controllers
             return Ok(books);
         }
 
-        [HttpGet("analyze")]
-        public IActionResult AnalyzeBook()
+        [HttpGet("GetBookTitles")]
+        public async Task<IActionResult> GetBookTitles()
         {
-            // Placeholder for future analysis logic
-            return Ok("Book analysis feature is under development.");
+            // Retrieve only the Id and Title of books from the database
+            var bookTitles = await _context.Books
+                                            .Select(book => new BookTitleDTO
+                                            {
+                                                Id = book.Id,
+                                                Title = book.Title
+                                            })
+                                            .ToListAsync();
+
+            // Return the list of book titles
+            return Ok(bookTitles);
         }
     }
 }

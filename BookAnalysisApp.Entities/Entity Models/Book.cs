@@ -16,12 +16,8 @@ namespace BookAnalysisApp.Entities
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Calculate word frequency from content
-        public void CalculateWordFrequency()
-        {
-            var words = Content.Split(new[] { ' ', '.', ',', '!', '?', ';', ':', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            WordFrequency = words.GroupBy(word => word.ToLower())
-                                 .ToDictionary(group => group.Key, group => group.Count());
-        }
+       
+        
+
     }
 }
