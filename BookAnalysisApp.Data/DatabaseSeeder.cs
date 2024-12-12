@@ -34,29 +34,36 @@ namespace BookAnalysisApp.Data
                 return;
             }
 
+            var phrases = new List<EnglishHungarianPhrase>();
+
             using (var reader = new StreamReader(filePath))
             {
                 string line;
-                int lineCount = 0;
                 while ((line = reader.ReadLine()) != null)
                 {
                     var parts = line.Split(new string[] { " - " }, StringSplitOptions.None); // " - " karakterlánc alapján darabolás
-                    var englishPhrase = parts[0].Trim();
+                    var englishPhrase = parts[0].Trim().ToLower();
                     var hungarianMeanings = parts[1].Split(',').Select(s => s.Trim()).ToList();
 
-                    var phrase = new EnglishHungarianPhrase
+                    if (englishPhrase.Length >= 3)
                     {
-                        EnglishPhrase = englishPhrase,
-                        HungarianMeanings = hungarianMeanings
-                    };
+                        var phrase = new EnglishHungarianPhrase
+                        {
+                            EnglishPhrase = englishPhrase,
+                            HungarianMeanings = hungarianMeanings
+                        };
 
-                    _context.EnglishHungarianPhrases.Add(phrase);
-                    lineCount++;
+                        phrases.Add(phrase);
+                    }
                 }
-
-                _context.SaveChanges();
             }
 
+            // Rendezze az EnglishPhrase kifejezéseket a hosszuk szerint, leghosszabbtól a legrövidebbig
+            var sortedPhrases = phrases.OrderByDescending(p => p.EnglishPhrase.Length).ToList();
+
+            // Adja hozzá a rendezett kifejezéseket az adatbázishoz
+            _context.EnglishHungarianPhrases.AddRange(sortedPhrases);
+            _context.SaveChanges();
         }
     }
 }

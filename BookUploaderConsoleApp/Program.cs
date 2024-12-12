@@ -7,7 +7,6 @@ namespace BookUploaderConsoleApp
         static async Task Main(string[] args)
         {
             Console.WriteLine("Book Uploader Console App");
-           // Console.ReadLine();
             Console.WriteLine("indul!");
 
             // Base URL of your API
@@ -55,8 +54,8 @@ namespace BookUploaderConsoleApp
                         Content = bookContent
                     };
 
-                    // Send the data to the API
-                    var response = await httpClient.PostAsJsonAsync("/api/Books/upload", book);
+                    // Send the data to the API with editing options
+                    var response = await httpClient.PostAsJsonAsync("/api/Books/uploadAndEdit?removeNonAlphabetic=true&toLowerCase=true", book);
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -76,11 +75,9 @@ namespace BookUploaderConsoleApp
                 Console.WriteLine($"Hiba történt: {ex.Message}");
             }
 
-            Console.WriteLine("Zárás, nyomj entert a kilépéshez.");  
+            Console.WriteLine("Zárás, nyomj entert a kilépéshez.");
             Console.ReadKey();
         }
-        
-
     }
 
     public class BookDto

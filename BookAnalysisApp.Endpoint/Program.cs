@@ -25,6 +25,9 @@ namespace BookAnalysisApp.Endpoint
             // Register the DatabaseSeeder service
             builder.Services.AddScoped<DatabaseSeeder>();
 
+            // Register the BookEditor service
+            builder.Services.AddScoped<BookEditor>();
+
             // Add Swagger services
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
@@ -54,6 +57,7 @@ namespace BookAnalysisApp.Endpoint
 
             app.Run();
         }
+
     }
 
     // Custom Swagger Filter to remove wordFrequency from the generated Swagger docs
