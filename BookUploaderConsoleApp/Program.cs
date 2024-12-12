@@ -88,8 +88,18 @@ namespace BookUploaderConsoleApp
         {
             try
             {
+                // Create a header with the names of all files
+                var header = string.Join("\n", txtFiles.Select(Path.GetFileName));
+
                 // Concatenate all file contents into a single text
-                var allBooksContent = string.Join("\n\n", txtFiles.Select(filePath => File.ReadAllText(filePath)));
+                var allBooksContent = header + "\n\n" + string.Join("\n\n", txtFiles.Select(filePath => File.ReadAllText(filePath)));
+
+                // Save the concatenated text into a new file
+                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                var outputFilePath = $"AllBooks_{timestamp}.txt";
+                await File.WriteAllTextAsync(outputFilePath, allBooksContent);
+
+                Console.WriteLine($"Az összesített fájl elmentve: {outputFilePath}");
 
                 // Prepare the single book object with all contents
                 var allBooks = new BookDto

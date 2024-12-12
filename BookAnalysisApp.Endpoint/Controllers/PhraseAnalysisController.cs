@@ -75,9 +75,10 @@ namespace BookAnalysisApp.Endpoint.Controllers
             // Az időtartam kinyerése
             var elapsedTime = stopwatch.Elapsed;
 
-            // Válaszban visszaadjuk az elemzési eredményeket és az időtartamot
+            // Válaszban visszaadjuk az elemzési eredményeket, az időtartamot és a könyv címét
             return Ok(new
             {
+                BookTitle = book.Title,
                 ElapsedTime = elapsedTime.ToString(),
                 AnalysisResult = rankedWords
             });
@@ -91,41 +92,54 @@ namespace BookAnalysisApp.Endpoint.Controllers
             // Sort phrases by length in descending order
             var sortedPhrases = phrases.OrderByDescending(p => p.Length).ToList();
 
-            // Use StringBuilder for efficient string manipulation
-            var contentBuilder = new StringBuilder(content.ToLower());
-
             // Use a HashSet for fast phrase lookup
             var phraseSet = new HashSet<string>(sortedPhrases.Select(p => p.ToLower()));
 
-            Parallel.ForEach(phraseSet, lowerPhrase =>
+            // Split the content into smaller chunks for parallel processing
+            var contentChunks = SplitContentIntoChunks(content.ToLower(), Environment.ProcessorCount);
+
+            Parallel.ForEach(contentChunks, chunk =>
             {
-                int count = 0;
+                var chunkBuilder = new StringBuilder(chunk);
 
-                // Count occurrences of the phrase in the content
-                int index = contentBuilder.ToString().IndexOf(lowerPhrase);
-                while (index != -1)
+                foreach (var lowerPhrase in phraseSet)
                 {
-                    count++;
-                    if (index >= 0 && index + lowerPhrase.Length <= contentBuilder.Length)
+                    int count = 0;
+
+                    // Count occurrences of the phrase in the chunk
+                    int index = chunkBuilder.ToString().IndexOf(lowerPhrase);
+                    while (index != -1)
                     {
-                        lock (contentBuilder)
+                        count++;
+                        if (index >= 0 && index + lowerPhrase.Length <= chunkBuilder.Length)
                         {
-                            if (index >= 0 && index + lowerPhrase.Length <= contentBuilder.Length)
-                            {
-                                contentBuilder.Remove(index, lowerPhrase.Length);
-                            }
+                            chunkBuilder.Remove(index, lowerPhrase.Length);
                         }
+                        index = chunkBuilder.ToString().IndexOf(lowerPhrase);
                     }
-                    index = contentBuilder.ToString().IndexOf(lowerPhrase);
-                }
 
-                if (count > 0)
-                {
-                    wordFrequency.AddOrUpdate(lowerPhrase, count, (key, oldValue) => oldValue + count);
+                    if (count > 0)
+                    {
+                        wordFrequency.AddOrUpdate(lowerPhrase, count, (key, oldValue) => oldValue + count);
+                    }
                 }
             });
 
             return new Dictionary<string, int>(wordFrequency);
+        }
+
+        // Helper function to split content into smaller chunks
+        private List<string> SplitContentIntoChunks(string content, int chunkCount)
+        {
+            var chunks = new List<string>();
+            int chunkSize = content.Length / chunkCount;
+            for (int i = 0; i < chunkCount; i++)
+            {
+                int start = i * chunkSize;
+                int length = (i == chunkCount - 1) ? content.Length - start : chunkSize;
+                chunks.Add(content.Substring(start, length));
+            }
+            return chunks;
         }
 
         // Optionally: Add an endpoint to retrieve the word frequencies
@@ -134,6 +148,7 @@ namespace BookAnalysisApp.Endpoint.Controllers
         {
             var wordFrequencies = await _context.WordFrequencies
                                                  .OrderByDescending(wf => wf.Frequency)
+                                                // .OrderByDescending(wf => wf.Word.Length)
                                                  .ToListAsync();
 
             return Ok(wordFrequencies);
