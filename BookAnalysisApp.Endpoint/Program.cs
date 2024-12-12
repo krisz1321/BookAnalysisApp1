@@ -22,6 +22,9 @@ namespace BookAnalysisApp.Endpoint
                                                        // options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             );
 
+            // Register the DatabaseSeeder service
+            builder.Services.AddScoped<DatabaseSeeder>();
+
             // Add Swagger services
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
@@ -30,6 +33,13 @@ namespace BookAnalysisApp.Endpoint
             });
 
             var app = builder.Build();
+
+            // Seed the database
+            using (var scope = app.Services.CreateScope())
+            {
+                var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+                seeder.SeedDatabase();
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

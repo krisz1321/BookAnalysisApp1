@@ -5,6 +5,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\EnglishHungarianPhrasesTable.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\dictionary.dat" />
+    <None Remove="Resources\dictionary.txt" />
+  </ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
@@ -22,6 +31,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BookAnalysisApp.Entities\BookAnalysisApp.Entities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Migrations\EnglishHungarianPhrasesTable.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Content Include="Resources\dictionary.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

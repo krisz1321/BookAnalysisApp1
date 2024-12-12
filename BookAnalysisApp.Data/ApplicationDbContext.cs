@@ -8,11 +8,14 @@ namespace BookAnalysisApp.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
+            
         }
 
   
         public DbSet<Book> Books { get; set; }
 
-        public DbSet<WordFrequency> WordFrequencies { get; set; }   
+        public DbSet<WordFrequency> WordFrequencies { get; set; }
+
+        public DbSet<EnglishHungarianPhrase> EnglishHungarianPhrases { get; set; } // New DbSet
     }
 }
