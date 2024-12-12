@@ -108,7 +108,13 @@ namespace BookAnalysisApp.Endpoint.Controllers
                     count++;
                     if (index >= 0 && index + lowerPhrase.Length <= contentBuilder.Length)
                     {
-                        contentBuilder.Remove(index, lowerPhrase.Length);
+                        lock (contentBuilder)
+                        {
+                            if (index >= 0 && index + lowerPhrase.Length <= contentBuilder.Length)
+                            {
+                                contentBuilder.Remove(index, lowerPhrase.Length);
+                            }
+                        }
                     }
                     index = contentBuilder.ToString().IndexOf(lowerPhrase);
                 }

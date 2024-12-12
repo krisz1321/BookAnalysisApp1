@@ -75,8 +75,46 @@ namespace BookUploaderConsoleApp
                 Console.WriteLine($"Hiba történt: {ex.Message}");
             }
 
-            Console.WriteLine("Zárás, nyomj entert a kilépéshez.");
-            Console.ReadKey();
+            Console.WriteLine("Zárás, nyomj entert a kilépéshez vagy más gombot az összes fájl egyben való feltöltéséhez.");
+            var key = Console.ReadKey();
+
+            if (key.Key != ConsoleKey.Enter)
+            {
+                await UploadAllBooksAsync(txtFiles, httpClient);
+            }
+        }
+
+        private static async Task UploadAllBooksAsync(string[] txtFiles, HttpClient httpClient)
+        {
+            try
+            {
+                // Concatenate all file contents into a single text
+                var allBooksContent = string.Join("\n\n", txtFiles.Select(filePath => File.ReadAllText(filePath)));
+
+                // Prepare the single book object with all contents
+                var allBooks = new BookDto
+                {
+                    Title = "AllBooks",
+                    Content = allBooksContent
+                };
+
+                // Send the concatenated data to the API
+                var response = await httpClient.PostAsJsonAsync("/api/Books/uploadAndEdit?removeNonAlphabetic=true&toLowerCase=true", allBooks);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Sikeres adatfeltöltés: AllBooks");
+                }
+                else
+                {
+                    Console.WriteLine($"Sikertelen adatfeltöltés: AllBooks");
+                    Console.WriteLine($"Hiba: {response.StatusCode} - {response.ReasonPhrase}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Hiba történt az összes fájl feltöltésekor: {ex.Message}");
+            }
         }
     }
 
