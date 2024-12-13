@@ -1,21 +1,35 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BookAnalysisApp.Entities;
-using System.Collections.Generic;
+﻿using BookAnalysisApp.Entities;
+using Microsoft.EntityFrameworkCore;
 
-namespace BookAnalysisApp.Data
+public class ApplicationDbContext : DbContext
 {
-    public class ApplicationDbContext : DbContext
+    public DbSet<Book> Books { get; set; }
+    public DbSet<EnglishPhrase> EnglishPhrases { get; set; }
+    public DbSet<BookPhrase> BookPhrases { get; set; }
+    public DbSet<EnglishHungarianPhrase> EnglishHungarianPhrases { get; set; }
+    public DbSet<WordFrequency> WordFrequencies { get; set; }
+
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
-            
-        }
+    }
 
-  
-        public DbSet<Book> Books { get; set; }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // Configuring the Many-to-Many relationship
+        modelBuilder.Entity<BookPhrase>()
+            .HasKey(bp => new { bp.BookId, bp.EnglishPhraseId });
 
-        public DbSet<WordFrequency> WordFrequencies { get; set; }
+        modelBuilder.Entity<BookPhrase>()
+            .HasOne(bp => bp.Book)
+            .WithMany(b => b.BookPhrases)
+            .HasForeignKey(bp => bp.BookId);
 
-        public DbSet<EnglishHungarianPhrase> EnglishHungarianPhrases { get; set; } // New DbSet
+        modelBuilder.Entity<BookPhrase>()
+            .HasOne(bp => bp.EnglishPhrase)
+            .WithMany(ep => ep.BookPhrases)
+            .HasForeignKey(bp => bp.EnglishPhraseId);
+
+        base.OnModelCreating(modelBuilder);
     }
 }

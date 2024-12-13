@@ -12,7 +12,6 @@ namespace BookAnalysisApp.Endpoint.Controllers
         private readonly ApplicationDbContext _context;
         private readonly BookEditor _bookEditor;
 
-
         public BooksController(ApplicationDbContext context, BookEditor bookEditor)
         {
             _context = context;
@@ -71,8 +70,6 @@ namespace BookAnalysisApp.Endpoint.Controllers
                 book.CreatedAt
             });
         }
-
-
 
         [HttpGet("list")]
         public async Task<IActionResult> GetBooks()

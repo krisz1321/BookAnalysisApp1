@@ -5,8 +5,8 @@ namespace BookAnalysisApp.Entities
 {
     public class WordFrequency
     {
-        public Guid Id { get; set; } // Unique identifier for each word record
-        public string Word { get; set; } = string.Empty; // The word itself
-        public int Frequency { get; set; } // How many times this word appears in the book
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Word { get; set; }
+        public int Frequency { get; set; }
     }
 }

@@ -43,7 +43,8 @@ namespace BookAnalysisApp.Data
                 {
                     var parts = line.Split(new string[] { " - " }, StringSplitOptions.None); // " - " karakterlánc alapján darabolás
                     var englishPhrase = parts[0].Trim().ToLower();
-                    var hungarianMeanings = parts[1].Split(',').Select(s => s.Trim()).ToList();
+                    //var hungarianMeanings = parts[1].Split(',').Select(s => s.Trim()).ToList();
+                    var hungarianMeanings = parts[1].Trim();
 
                     if (englishPhrase.Length >= 3)
                     {
