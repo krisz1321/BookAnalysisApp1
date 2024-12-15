@@ -14,7 +14,7 @@ namespace BookUploaderConsoleApp
             var httpClient = new HttpClient { BaseAddress = new Uri(baseUrl) };
 
             // Directory containing TXT files
-            string directoryPath = "Books";
+            string directoryPath = "Books Files";
 
             if (!Directory.Exists(directoryPath))
             {

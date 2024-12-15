@@ -7,4 +7,18 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Books Files\A minta konyv.txt" />
+    <None Remove="Books Files\John Scalzi - Old Mans War.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Books Files\A minta konyv.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Books Files\John Scalzi - Old Mans War.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
