@@ -66,5 +66,7 @@ namespace BookAnalysisApp.Data
             _context.EnglishHungarianPhrases.AddRange(sortedPhrases);
             _context.SaveChanges();
         }
+
+       
     }
 }

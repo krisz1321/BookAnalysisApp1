@@ -3,6 +3,11 @@ using BookAnalysisApp.Data;
 using BookAnalysisApp.Entities;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Extensions.Options;
 
 namespace BookAnalysisApp.Endpoint
 {
@@ -17,9 +22,9 @@ namespace BookAnalysisApp.Endpoint
 
             // Configure Entity Framework Core and the ApplicationDbContext
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseInMemoryDatabase("BooksDb") // For testing, we use an in-memory database.
-                                                       // For real-world, replace it with a real database connection like:
-                                                       // options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+                  options.UseInMemoryDatabase("BooksDb") // For testing, we use an in-memory database.
+                                                         // For real-world, replace it with a real database connection like:
+                 //options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
             );
 
             // Register the DatabaseSeeder service
@@ -27,6 +32,38 @@ namespace BookAnalysisApp.Endpoint
 
             // Register the BookEditor service
             builder.Services.AddScoped<BookEditor>();
+
+            // Configure Identity services
+            builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+            })
+                  .AddEntityFrameworkStores<ApplicationDbContext>()
+                  .AddDefaultTokenProviders();
+
+            // Configure JWT Authentication
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+                    ValidAudience = builder.Configuration["JWT:ValidAudience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+                };
+            });
 
             // Add Swagger services
             builder.Services.AddEndpointsApiExplorer();
@@ -51,13 +88,16 @@ namespace BookAnalysisApp.Endpoint
                 app.UseSwaggerUI();
             }
 
+            // Add the Authentication middleware to the pipeline
+            app.UseAuthentication();  // This ensures the authentication middleware is used
             app.UseHttpsRedirection();
-            app.UseAuthorization();
+            app.UseAuthorization();   // This ensures the authorization middleware is used
+
+            // Map Controllers
             app.MapControllers();
 
             app.Run();
         }
-
     }
 
     // Custom Swagger Filter to remove wordFrequency from the generated Swagger docs

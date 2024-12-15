@@ -1,7 +1,10 @@
-﻿using BookAnalysisApp.Entities;
+﻿using BookAnalysisApp.Data;
+using BookAnalysisApp.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<AppUser>
 {
     public DbSet<Book> Books { get; set; }
     public DbSet<EnglishPhrase> EnglishPhrases { get; set; }
@@ -30,6 +33,7 @@ public class ApplicationDbContext : DbContext
             .WithMany(ep => ep.BookPhrases)
             .HasForeignKey(bp => bp.EnglishPhraseId);
 
+        // Identity model configurations
         base.OnModelCreating(modelBuilder);
     }
 }
