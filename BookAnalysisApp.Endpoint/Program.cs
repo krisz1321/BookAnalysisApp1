@@ -17,23 +17,18 @@ namespace BookAnalysisApp.Endpoint
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+         
             builder.Services.AddControllers();
 
-            // Configure Entity Framework Core and the ApplicationDbContext
+           
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                  options.UseInMemoryDatabase("BooksDb") // For testing, we use an in-memory database.
-                                                         // For real-world, replace it with a real database connection like:
+                  options.UseInMemoryDatabase("BooksDb") //in-memory database.
                  //options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
             );
 
-            // Register the DatabaseSeeder service
             builder.Services.AddScoped<DatabaseSeeder>();
-
-            // Register the BookEditor service
             builder.Services.AddScoped<BookEditor>();
 
-            // Configure Identity services
             builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = false;
@@ -45,7 +40,7 @@ namespace BookAnalysisApp.Endpoint
                   .AddEntityFrameworkStores<ApplicationDbContext>()
                   .AddDefaultTokenProviders();
 
-            // Configure JWT Authentication
+            //JWT Authentication
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -65,7 +60,7 @@ namespace BookAnalysisApp.Endpoint
                 };
             });
 
-            // Add Swagger services
+       
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
@@ -81,26 +76,24 @@ namespace BookAnalysisApp.Endpoint
                 seeder.SeedDatabase();
             }
 
-            // Configure the HTTP request pipeline.
+         
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-            // Add the Authentication middleware to the pipeline
-            app.UseAuthentication();  // This ensures the authentication middleware is used
+            app.UseAuthentication();  
             app.UseHttpsRedirection();
-            app.UseAuthorization();   // This ensures the authorization middleware is used
+            app.UseAuthorization();  
 
-            // Map Controllers
+
             app.MapControllers();
 
             app.Run();
         }
     }
 
-    // Custom Swagger Filter to remove wordFrequency from the generated Swagger docs
     public class RemoveWordFrequencySchemaFilter : ISchemaFilter
     {
         public void Apply(OpenApiSchema schema, SchemaFilterContext context)
