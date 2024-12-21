@@ -1,4 +1,10 @@
-﻿using System.Net.Http.Json;
+﻿using OfficeOpenXml;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 
 namespace BookUploaderConsoleApp
 {
@@ -6,131 +12,205 @@ namespace BookUploaderConsoleApp
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Book Uploader Console App");
-            Console.WriteLine("indul!");
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            // Base URL of your API
-            var baseUrl = "https://localhost:7223"; // Adjust this to your API's base URL
+            Console.WriteLine("Book Uploader Console App");
+            var baseUrl = "https://localhost:7223"; // Adjust API base URL
             var httpClient = new HttpClient { BaseAddress = new Uri(baseUrl) };
 
-            // Directory containing TXT files
+            while (true)
+            {
+                Console.WriteLine("\nMűveletek:\n1. Könyvek feltöltése\n2. Könyvcímek listázása\n3. Könyv kiválasztása elemzéshez\n4. Kilépés");
+                Console.Write("Válassz egy opciót: ");
+
+                switch (Console.ReadLine())
+                {
+                    case "1":
+                        await UploadBooksAsync(httpClient);
+                        break;
+                    case "2":
+                        await ListBookTitlesAsync(httpClient);
+                        break;
+                    case "3":
+                        await AnalyzeSelectedBookAsync(httpClient);
+                        break;
+                    case "4":
+                        return;
+                    default:
+                        Console.WriteLine("Érvénytelen opció. Próbáld újra.");
+                        break;
+                }
+            }
+        }
+
+        private static async Task UploadBooksAsync(HttpClient httpClient)
+        {
             string directoryPath = "Books Files";
 
-            if (!Directory.Exists(directoryPath))
+            if (!System.IO.Directory.Exists(directoryPath))
             {
-                Console.WriteLine($"Hiba: A mappa nem található: {directoryPath}");
+                Console.WriteLine($"Hiba: A megadott mappa nem található: {directoryPath}");
                 return;
             }
 
-            // Get all TXT files in the directory
-            var txtFiles = Directory.GetFiles(directoryPath, "*.txt");
-
+            var txtFiles = System.IO.Directory.GetFiles(directoryPath, "*.txt");
             if (txtFiles.Length == 0)
             {
                 Console.WriteLine("Nincsenek .txt fájlok a megadott mappában.");
                 return;
             }
 
-            try
+            foreach (var filePath in txtFiles)
             {
-                foreach (var filePath in txtFiles)
+                var bookTitle = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                var bookContent = await System.IO.File.ReadAllTextAsync(filePath);
+
+                if (string.IsNullOrWhiteSpace(bookContent))
                 {
-                    // Extract book title from file name
-                    var bookTitle = Path.GetFileNameWithoutExtension(filePath);
-
-                    // Read content from the file
-                    var bookContent = await File.ReadAllTextAsync(filePath);
-
-                    if (string.IsNullOrWhiteSpace(bookContent))
-                    {
-                        Console.WriteLine($"Hiba: Az alábbi fájl üres: {filePath}");
-                        continue;
-                    }
-
-                    // Prepare the book object
-                    var book = new BookDto
-                    {
-                        Title = bookTitle,
-                        Content = bookContent
-                    };
-
-                    // Send the data to the API with editing options
-                    var response = await httpClient.PostAsJsonAsync("/api/Books/uploadAndEdit?removeNonAlphabetic=true&toLowerCase=true", book);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        Console.WriteLine($"Sikeres adatfeltöltés: {bookTitle}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Sikertelen adatfeltöltés: {bookTitle}");
-                        Console.WriteLine($"Hiba: {response.StatusCode} - {response.ReasonPhrase}");
-                    }
+                    Console.WriteLine($"Hiba: Az alábbi fájl üres: {filePath}");
+                    continue;
                 }
 
-                Console.WriteLine("Minden adat feltöltése befejeződött.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Hiba történt: {ex.Message}");
-            }
-
-            Console.WriteLine("Zárás, nyomj entert a kilépéshez vagy más gombot az összes fájl egyben való feltöltéséhez.");
-            var key = Console.ReadKey();
-
-            if (key.Key != ConsoleKey.Enter)
-            {
-                await UploadAllBooksAsync(txtFiles, httpClient);
-            }
-        }
-
-        private static async Task UploadAllBooksAsync(string[] txtFiles, HttpClient httpClient)
-        {
-            try
-            {
-                // Create a header with the names of all files
-                var header = string.Join("\n", txtFiles.Select(Path.GetFileName));
-
-                // Concatenate all file contents into a single text
-                var allBooksContent = header + "\n\n" + string.Join("\n\n", txtFiles.Select(filePath => File.ReadAllText(filePath)));
-
-                // Save the concatenated text into a new file
-                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                var outputFilePath = $"AllBooks_{timestamp}.txt";
-                await File.WriteAllTextAsync(outputFilePath, allBooksContent);
-
-                Console.WriteLine($"Az összesített fájl elmentve: {outputFilePath}");
-
-                // Prepare the single book object with all contents
-                var allBooks = new BookDto
-                {
-                    Title = "AllBooks",
-                    Content = allBooksContent
-                };
-
-                // Send the concatenated data to the API
-                var response = await httpClient.PostAsJsonAsync("/api/Books/uploadAndEdit?removeNonAlphabetic=true&toLowerCase=true", allBooks);
+                var book = new BookDto { Title = bookTitle, Content = bookContent };
+                var response = await httpClient.PostAsJsonAsync("/api/Books/uploadAndEdit?removeNonAlphabetic=true&toLowerCase=true", book);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("Sikeres adatfeltöltés: AllBooks");
+                    Console.WriteLine($"Sikeres feltöltés: {bookTitle}");
                 }
                 else
                 {
-                    Console.WriteLine($"Sikertelen adatfeltöltés: AllBooks");
+                    Console.WriteLine($"Sikertelen feltöltés: {bookTitle}");
                     Console.WriteLine($"Hiba: {response.StatusCode} - {response.ReasonPhrase}");
                 }
             }
-            catch (Exception ex)
+        }
+
+        private static async Task ListBookTitlesAsync(HttpClient httpClient)
+        {
+            Console.WriteLine("\nFeltöltött könyvek:");
+            var response = await httpClient.GetAsync("/api/Books/GetBookTitles");
+
+            if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"Hiba történt az összes fájl feltöltésekor: {ex.Message}");
+                Console.WriteLine("Nem sikerült lekérni a könyveket.");
+                return;
+            }
+
+            var bookTitles = await response.Content.ReadFromJsonAsync<List<BookTitleDto>>();
+            if (bookTitles == null || bookTitles.Count == 0)
+            {
+                Console.WriteLine("Nincsenek feltöltött könyvek.");
+                return;
+            }
+
+            foreach (var book in bookTitles)
+            {
+                Console.WriteLine($"ID: {book.Id}, Cím: {book.Title}");
             }
         }
+
+        private static async Task AnalyzeSelectedBookAsync(HttpClient httpClient)
+        {
+            Console.Write("Adja meg a könyv számát a listában: ");
+            string bookIdInput = Console.ReadLine();
+
+            if (!Guid.TryParse(bookIdInput, out var bookId))
+            {
+                Console.WriteLine("Érvénytelen ID formátum.");
+                return;
+            }
+
+            Console.WriteLine("Alapértelmezett rendezési mód: frekvencia (desc).");
+            Console.WriteLine("Elemzés indul...");
+
+            await StoreAndListPhrases(httpClient, bookId);
+        }
+
+        private static async Task StoreAndListPhrases(HttpClient httpClient, Guid bookId)
+        {
+            var storeResponse = await httpClient.PostAsync($"/api/PhraseStorage/store?bookId={bookId}", null);
+
+            if (!storeResponse.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Nem sikerült menteni az elemzést.");
+                return;
+            }
+
+            Console.WriteLine("Elemzés mentése sikeres.");
+
+            var listResponse = await httpClient.GetAsync($"/api/PhraseStorage/list?bookId={bookId}&sortBy=frequency&order=desc");
+            var phrasesResponse = await listResponse.Content.ReadFromJsonAsync<PhrasesResponseDto>();
+
+            var jsonResponse = await listResponse.Content.ReadAsStringAsync();
+            Console.WriteLine($"API Response: {jsonResponse}"); // Debug log az API válaszhoz
+
+            if (phrasesResponse == null || phrasesResponse.Phrases == null || !phrasesResponse.Phrases.Any())
+            {
+                Console.WriteLine("Nincsenek mentett kifejezések.");
+                return;
+            }
+
+            Console.WriteLine($"\nKönyv címe: {phrasesResponse.BookTitle}");
+            Console.WriteLine("Mentett kifejezések:");
+
+            foreach (var phrase in phrasesResponse.Phrases)
+            {
+                Console.WriteLine($"Angol: {phrase.Phrase}, Magyar: {phrase.HungarianMeaning}, Gyakoriság: {phrase.Frequency}");
+            }
+
+            // Excel mentés
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+            string filePath = $"{phrasesResponse.BookTitle.Replace(' ', '_')}_Phrases_{timestamp}.xlsx";
+
+            using (var package = new OfficeOpenXml.ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Phrases");
+
+                // Fejléc hozzáadása
+                worksheet.Cells[1, 1].Value = "Angol kifejezés";
+                worksheet.Cells[1, 2].Value = "Magyar jelentés";
+                worksheet.Cells[1, 3].Value = "Gyakoriság";
+
+                // Adatok hozzáadása
+                for (int i = 0; i < phrasesResponse.Phrases.Count; i++)
+                {
+                    var phrase = phrasesResponse.Phrases[i];
+                    worksheet.Cells[i + 2, 1].Value = phrase.Phrase; // Javítás: angol kifejezés mentése
+                    worksheet.Cells[i + 2, 2].Value = phrase.HungarianMeaning;
+                    worksheet.Cells[i + 2, 3].Value = phrase.Frequency;
+                }
+
+                // Fájl mentése
+                package.SaveAs(new System.IO.FileInfo(filePath));
+            }
+
+            Console.WriteLine($"Az elemzés mentve lett az alábbi fájlba: {filePath}");
+        }
+    }
+
+    public class PhrasesResponseDto
+    {
+        public string BookTitle { get; set; }
+        public List<PhraseDto> Phrases { get; set; }
     }
 
     public class BookDto
     {
-        public string Title { get; set; } // Book title
-        public string Content { get; set; } // Book content
+        public string Title { get; set; }
+        public string Content { get; set; }
+    }
+
+    public class BookTitleDto
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; }
+    }
+
+    public class PhraseDto
+    {
+        public string Phrase { get; set; }
+        public string HungarianMeaning { get; set; }
+        public int Frequency { get; set; }
     }
 }
